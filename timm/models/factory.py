@@ -1,3 +1,5 @@
+from ast import keyword
+from statistics import mode
 from urllib.parse import urlsplit, urlunsplit
 import os
 
@@ -63,12 +65,19 @@ def create_model(
         # load model weights + pretrained_cfg from Hugging Face hub.
         pretrained_cfg, model_name = load_model_config_from_hf(model_name)
 
-    if not is_model(model_name):
+    if not is_model(model_name) and not "phinet" in model_name:
         raise RuntimeError('Unknown model (%s)' % model_name)
-
-    create_fn = model_entrypoint(model_name)
-    with set_layer_config(scriptable=scriptable, exportable=exportable, no_jit=no_jit):
-        model = create_fn(pretrained=pretrained, pretrained_cfg=pretrained_cfg, **kwargs)
+    
+    if model_name == "phinetv1":
+        import timm.models.phinetv1 as phinetv1
+        model = phinetv1.PhiNet(**kwargs)
+        
+    else:
+        create_fn = model_entrypoint(model_name)
+        with set_layer_config(scriptable=scriptable, exportable=exportable, no_jit=no_jit):
+            model = create_fn(pretrained=pretrained, pretrained_cfg=pretrained_cfg, **kwargs)
+    
+    
 
     if checkpoint_path:
         load_checkpoint(model, checkpoint_path)

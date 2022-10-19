@@ -10,12 +10,42 @@ import logging
 from PIL import Image
 
 from .parsers import create_parser
+from .parsers.classes_hf1k import get_class
 
 _logger = logging.getLogger(__name__)
 
 
 _ERROR_RETRY = 50
 
+class ImagenetCustom(data.Dataset):
+    def __init__(
+        self,
+        root,
+        split,
+        parser=None,
+        class_map=None,
+        load_bytes=False,
+        transform=None,
+        target_transform=None,
+    ):
+        data_folder = os.path.join(root, split)
+        self.samples = os.listdir(data_folder)
+    
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img = Image.open(self.samples[idx])
+        target =  get_class(img)
+        
+        if self.transform is not None:
+            img = self.transform(img)
+        if target is None:
+            target = -1
+        elif self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target
 
 class ImageDataset(data.Dataset):
 
