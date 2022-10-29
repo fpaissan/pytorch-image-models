@@ -89,7 +89,7 @@ group.add_argument('--train-split', metavar='NAME', default='train',
                     help='dataset train split (default: train)')
 group.add_argument('--val-split', metavar='NAME', default='validation',
                     help='dataset validation split (default: validation)')
-group.add_argument('--dataset-download', action='store_true', default=False,
+group.add_argument('--dataset-download', action='store_true', default=True,
                     help='Allow download of dataset for torch/ and tfds/ datasets that support it.')
 group.add_argument('--class-map', default='', type=str, metavar='FILENAME',
                     help='path to class to idx mapping file (default: "")')
@@ -346,6 +346,8 @@ def _parse_args():
 
 
 def main():
+    wandb.init(project="image_classification", entity="ffpais")
+    
     utils.setup_default_logging()
     args, args_text = _parse_args()
 
@@ -413,6 +415,9 @@ def main():
         bn_eps=args.bn_eps,
         scriptable=args.torchscript,
         checkpoint_path=args.initial_checkpoint)
+    
+    wandb.watch(model)
+
     if args.num_classes is None:
         assert hasattr(model, 'num_classes'), 'Model must have `num_classes` attr if not set on cmd line/config.'
         args.num_classes = model.num_classes  # FIXME handle model default vs config num_classes more elegantly

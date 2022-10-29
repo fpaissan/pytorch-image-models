@@ -65,12 +65,40 @@ def create_model(
         # load model weights + pretrained_cfg from Hugging Face hub.
         pretrained_cfg, model_name = load_model_config_from_hf(model_name)
 
-    if not is_model(model_name) and not "phinet" in model_name:
+    if not is_model(model_name) and not "phinet" in model_name and not "xnet" in model_name:
         raise RuntimeError('Unknown model (%s)' % model_name)
     
-    if model_name == "phinetv1":
-        import timm.models.phinetv1 as phinetv1
-        model = phinetv1.PhiNet(**kwargs)
+    if "phinet" in model_name:
+        t_args = model_name.split("_")[-1]
+        t_args = t_args.split("-")
+        keys = []
+        values = []
+        for e in t_args:
+            keys.append(e.split(":")[0])
+            values.append(eval(e.split(":")[1]))
+            
+        t_args = {k:v for (k,v) in zip(keys, values)}
+        kwargs.update(t_args)
+        
+        if "phinetv1" in model_name:
+            import timm.models.phinetv1 as phinetv1
+            model = phinetv1.PhiNet(**kwargs)
+    elif "xnet" in model_name:
+        t_args = model_name.split("~")[-1]
+        t_args = t_args.split("-")
+        keys = []
+        values = []
+        for e in t_args:
+            keys.append(e.split(":")[0])
+            values.append(eval(e.split(":")[1]))
+            
+        t_args = {k:v for (k,v) in zip(keys, values)}
+        kwargs.update(t_args)
+        del kwargs["drop_rate"]
+        
+        import timm.models.xnet as xnet
+        kwargs["downsample_layer"] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        model = xnet.XNet(**kwargs)
         
     else:
         create_fn = model_entrypoint(model_name)

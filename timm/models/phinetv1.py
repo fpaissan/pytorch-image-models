@@ -382,11 +382,11 @@ class PhiNetConvBlock(nn.Module):
             else:
                 return x + inp  # can also be x*self.sd_p + inp
         else:
-            return 
+            return x
 
 
 class PhiNet(nn.Module):
-    def __init__(self, res=96, in_channels=3, B0=7, alpha=1.5, beta=1.0, t_zero=6, h_swish=False, squeeze_excite=True,
+    def __init__(self, res=224, in_channels=3, B0=7, alpha=1.5, beta=1.0, t_zero=6, h_swish=False, squeeze_excite=True,
                  downsampling_layers=[5, 7], conv5_percent=0, first_conv_stride=2, first_conv_filters=48, b1_filters=24,
                  b2_filters=48, include_top=True, pooling=None, num_classes=1000, residuals=True, input_tensor=None, conv2d_input=False,
                  pool=False, drop_connect=0.2, drop_rate=0.2):
